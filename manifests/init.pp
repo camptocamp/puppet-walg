@@ -8,6 +8,8 @@ class walg (
   Stdlib::HTTPSUrl     $source,
   String[1]            $checksum,
   Integer              $retention,
+  Integer              $cron_hour,
+  Integer              $cron_minute,
   Stdlib::Absolutepath $destination = '/usr/local/bin',
   Boolean              $prometheus_exporter = true,
   Boolean              $backup_enable = true,
