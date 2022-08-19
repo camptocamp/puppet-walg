@@ -5,7 +5,7 @@
 # restore_command = '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p'
 
 source $1
-if [[ -z "${WALG_PGP_KEY_PATH}"]]; then
+if [[ -z "${WALG_PGP_KEY_PATH}" ]]; then
   WALG_PGP_KEY_PATH="${WALG_PGP_KEY_PATH_PRIVATE}"
 fi
 export AWS_ACCESS_KEY_ID
