@@ -86,9 +86,11 @@ class walg::config {
     'archive_mode':
       value => 'on',
       ;
-
     'archive_command':
       value => '/usr/local/bin/archive_command.sh /usr/local/bin/exporter.env %p',
+      ;
+    'restore_command':
+      value => '/usr/local/bin/wal-g.sh wal-fetch %f %p',
       ;
   }
 
