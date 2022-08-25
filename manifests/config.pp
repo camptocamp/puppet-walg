@@ -90,7 +90,7 @@ class walg::config {
       value => '/usr/local/bin/archive_command.sh /usr/local/bin/exporter.env %p',
       ;
     'restore_command':
-      value => '/usr/local/bin/wal-g.sh wal-fetch %f %p',
+      value => '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p',
       ;
   }
 
