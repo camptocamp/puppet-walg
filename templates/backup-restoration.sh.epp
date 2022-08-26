@@ -43,8 +43,11 @@ cd data
 
 echo "Configure recovery"
 touch recovery.signal
-echo "restore_command = '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p'" >> postgresql.auto.conf
 sed -i "s/listen_addresses = '\*'/listen_addresses = 'localhost'/" postgresql.conf
+<% if $remove_archive { %>
+sed -i "s#^archive_mode = .*#archive_mode = off#"
+sed -i "s#^archive_command = .*#archive_command = '/bin/true'#"
+<% } %>
 
 if [ "$TIMESTAMP" != "latest" ]; then
   echo "recovery_target_time = '$TIMESTAMP'" >> postgresql.auto.conf

@@ -38,9 +38,10 @@ class walg::config {
   file { '/root/backup-restoration.sh':
     content => epp('walg/backup-restoration.sh.epp',
       {
-        'datadir'      => $postgresql::params::datadir,
-        'service_name' => $postgresql::params::service_name,
-        'version'      => $postgresql::params::version,
+        'datadir'        => $postgresql::params::datadir,
+        'service_name'   => $postgresql::params::service_name,
+        'version'        => $postgresql::params::version,
+        'remove_archive' => $walg::backup_enable,
       }
     ),
     mode    => '0755',
@@ -70,6 +71,7 @@ class walg::config {
     owner   => 'root',
     group   => 'root',
   }
+
   file { '/usr/local/bin/backup-fuse.sh':
     content => epp('walg/backup-fuse.sh.epp',
       {
@@ -93,13 +95,16 @@ class walg::config {
         value => '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p',
         ;
     }
+
     cron { 'full-backup':
       command => "/usr/local/bin/cron-full-backup.sh /usr/local/bin/exporter.env ${walg::retention} | logger -t walg-fullbackup",
       user    => 'root',
       hour    => $walg::cron_hour,
       minute  => $walg::cron_minute,
     }
+
   } else {
+
     postgresql::server::config_entry {
       'archive_mode':
         value => 'off',
