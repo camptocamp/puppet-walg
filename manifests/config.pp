@@ -81,25 +81,39 @@ class walg::config {
     group   => 'root',
   }
 
-
-  postgresql::server::config_entry {
-    'archive_mode':
-      value => 'on',
-      ;
-    'archive_command':
-      value => '/usr/local/bin/archive_command.sh /usr/local/bin/exporter.env %p',
-      ;
-    'restore_command':
-      value => '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p',
-      ;
-  }
-
   if $walg::backup_enable {
+    postgresql::server::config_entry {
+      'archive_mode':
+        value => 'on',
+        ;
+      'archive_command':
+        value => '/usr/local/bin/archive_command.sh /usr/local/bin/exporter.env %p',
+        ;
+      'restore_command':
+        value => '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p',
+        ;
+    }
     cron { 'full-backup':
       command => "/usr/local/bin/cron-full-backup.sh /usr/local/bin/exporter.env ${walg::retention} | logger -t walg-fullbackup",
       user    => 'root',
       hour    => $walg::cron_hour,
       minute  => $walg::cron_minute,
+    }
+  } else {
+    postgresql::server::config_entry {
+      'archive_mode':
+        value => 'off',
+        ;
+      'archive_command':
+        ensure => absent,
+        ;
+      'restore_command':
+        ensure => absent,
+        ;
+    }
+
+    cron { 'full-backup':
+      ensure => absent,
     }
   }
 
