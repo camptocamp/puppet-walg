@@ -9,18 +9,6 @@
 class walg::config {
   assert_private()
 
-  file { '/usr/local/bin/archive_command.sh':
-    content => epp('walg/archive_command.sh.epp',
-      {
-        'backup_fuse'   => $walg::backup_fuse,
-        'backup_prefix' => $walg::backup_prefix,
-      }
-    ),
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-  }
-
   file { '/usr/local/bin/restore_command.sh':
     content => file('walg/restore_command.sh'),
     mode    => '0755',
@@ -93,6 +81,12 @@ class walg::config {
         value => '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p',
         ;
     }
+    $archive_command = epp('walg/archive_command.sh.epp',
+        {
+          'backup_fuse'   => $walg::backup_fuse,
+          'backup_prefix' => $walg::backup_prefix,
+        }
+    )
     cron { 'full-backup':
       command => "/usr/local/bin/cron-full-backup.sh /usr/local/bin/exporter.env ${walg::retention} | logger -t walg-fullbackup",
       user    => 'root',
@@ -112,10 +106,20 @@ class walg::config {
         ;
     }
 
+    $archive_command = ''
+
     cron { 'full-backup':
       ensure => absent,
     }
   }
+
+  file { '/usr/local/bin/archive_command.sh':
+    content => $archive_command,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+  }
+
 
   if $walg::backup_fuse {
     cron { 'backup-fuse':
