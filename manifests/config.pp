@@ -41,7 +41,7 @@ class walg::config {
         'datadir'        => $postgresql::params::datadir,
         'service_name'   => $postgresql::params::service_name,
         'version'        => $postgresql::params::version,
-        'remove_archive' => $walg::backup_enable,
+        'remove_archive' => ! $walg::backup_enable,
       }
     ),
     mode    => '0755',
