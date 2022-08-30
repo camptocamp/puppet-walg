@@ -95,7 +95,6 @@ class walg::config {
         value => '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p',
         ;
     }
-
     cron { 'full-backup':
       command => "/usr/local/bin/cron-full-backup.sh /usr/local/bin/exporter.env ${walg::retention} | logger -t walg-fullbackup",
       user    => 'root',
@@ -113,7 +112,7 @@ class walg::config {
         ensure => absent,
         ;
       'restore_command':
-        ensure => absent,
+        value => '/bin/true',
         ;
     }
 
