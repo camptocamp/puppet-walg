@@ -46,7 +46,7 @@ touch recovery.signal
 sed -i "s/listen_addresses = '\*'/listen_addresses = 'localhost'/" postgresql.conf
 <% if $remove_archive { %>
 sed -i "s#^archive_mode = .*#archive_mode = off#" postgresql.conf
-sed -i "s#^archive_command = .*#archive_command = '/bin/true'#" postgresql.conf
+sed -i "s#^archive_command = .*#archive_command = '/bin/false'#" postgresql.conf
 <% } %>
 
 if [ "$TIMESTAMP" != "latest" ]; then
