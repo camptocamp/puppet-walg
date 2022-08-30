@@ -112,7 +112,7 @@ class walg::config {
         ensure => absent,
         ;
       'restore_command':
-        value => '/bin/true',
+        value => '/bin/false',
         ;
     }
 
