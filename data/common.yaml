@@ -1,6 +1,7 @@
 ---
-walg::checksum: '1dc4c6cd65010d855bb5d6d27b1d9ee9b306615900a24977806b37cacdd18563'
-walg::source: 'https://github.com/wal-g/wal-g/releases/download/v0.2.19/wal-g.linux-amd64.tar.gz'
+walg::checksum: '21ee4ad9e1e874d1adf7f7fd3b1a79c3d1c6a754bc7d33c7478118fcdf1950d8'
+walg::source: 'https://github.com/wal-g/wal-g/releases/download/v2.0.1/wal-g-pg-ubuntu-18.04-amd64.tar.gz'
+walg::binary_name: 'wal-g-pg-ubuntu-18.04-amd64'
 walg::retention: 15
 walg::cron_hour: 2
 walg::cron_minute: 20

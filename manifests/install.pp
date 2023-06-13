@@ -23,9 +23,9 @@ class walg::install(
     checksum      => $walg::checksum,
     checksum_type => 'sha256',
     cleanup       => true,
-    creates       => "${install_path}/wal-g"
+    creates       => "${install_path}/${walg::binary_name}"
   }
-  -> file { "$install_path/walg":
+  -> file { "$install_path/${walg::binary_name}":
     ensure => file,
     mode   => '0755',
     owner  => 'root',
@@ -33,6 +33,6 @@ class walg::install(
   }
   -> file { "${walg::destination}/wal-g":
     ensure => link,
-    target => "${install_path}/wal-g"
+    target => "${install_path}/${walg::binary_name}"
   }
 }
