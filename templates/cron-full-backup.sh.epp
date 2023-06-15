@@ -2,7 +2,7 @@
 
 set -e
 
-HEADER="name                          last_modified        wal_segment_backup_start"
+HEADER="name                          modified             wal_segment_backup_start"
 HEADER_OK=0
 TO_DELETE=0
 TO_KEEP=0

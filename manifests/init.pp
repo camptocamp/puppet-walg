@@ -7,6 +7,7 @@
 class walg (
   Stdlib::HTTPSUrl     $source,
   String[1]            $checksum,
+  String[1]            $binary_name,
   Integer              $retention,
   Integer              $cron_hour,
   Integer              $cron_minute,
