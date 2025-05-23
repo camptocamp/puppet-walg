@@ -1,5 +1,5 @@
 #!/bin/bash
-archive_process=$(psql --tuples-only -c 'SELECT last_failed_time < last_archived_time FROM pg_stat_archiver')
+archive_process=$(psql --tuples-only -c 'SELECT COALESCE(last_failed_time < last_archived_time,true) FROM pg_stat_archiver')
 
 postgres_datadir_available_bytes=$(df --block-size=1 --output=avail $(psql -t -c "SELECT setting  FROM pg_settings WHERE name = 'data_directory'" 2> /dev/null) | tail -1)
 
