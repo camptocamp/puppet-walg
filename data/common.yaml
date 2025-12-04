@@ -2,9 +2,6 @@
 walg::checksum: '21ee4ad9e1e874d1adf7f7fd3b1a79c3d1c6a754bc7d33c7478118fcdf1950d8'
 walg::source: 'https://github.com/wal-g/wal-g/releases/download/v2.0.1/wal-g-pg-ubuntu-18.04-amd64.tar.gz'
 walg::binary_name: 'wal-g-pg-ubuntu-18.04-amd64'
-walg::retention: 15
-walg::cron_hour: 2
-walg::cron_minute: 20
 
-walg::prometheus_exporter::source: 'https://github.com/camptocamp/wal-g-prometheus-exporter/releases/download/0.0.8/wal-g-prometheus-exporter'
-walg::prometheus_exporter::checksum: 'b7a4704c6556379eff12da4456af092fed948a16092930fb4532f52f8c5d12a5'
+walg::walg_exporter::source: 'https://github.com/camptocamp/wal-g-prometheus-exporter/releases/download/0.0.9/wal-g-prometheus-exporter'
+walg::walg_exporter::checksum: '5ddf903a9863058bf6fadf506f853233353060c756b01551bec1b94529dc8d81'
