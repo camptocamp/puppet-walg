@@ -9,6 +9,7 @@
 # @param scrape_host What is the URL that should be used to scrap the node_exporter metric ?
 # @param scrape_port Which port should be used for scrapping the metric ?
 # @param prometheus_labels Labels to put on metrics reported by exporters
+# @param walg_env_file The walg environment variables file path
 class walg::walg_exporter (
   Stdlib::HttpsUrl     $source,
   String[1]            $checksum,
@@ -16,6 +17,7 @@ class walg::walg_exporter (
   Integer              $scrape_port       = 9351,
   String               $scrape_host       = $trusted['certname'],
   Hash                 $prometheus_labels = $walg::prometheus_labels,
+  Stdlib::Absolutepath $walg_env_file     = $walg::walg_env_file,
 ) {
   archive { "${install_root}/wal-g-prometheus-exporter":
     ensure        => present,
@@ -37,8 +39,9 @@ class walg::walg_exporter (
   systemd::unit_file { 'wal-g-prometheus-exporter.service':
     content   => epp('walg/wal-g-prometheus-exporter.service',
       {
-        'datadir'      => $postgresql::params::datadir,
-        'install_root' => $install_root,
+        'datadir'        => $postgresql::params::datadir,
+        'install_root'   => $install_root,
+        'walg_env_file'  => $walg_env_file,
       }
     ),
     enable    => true,

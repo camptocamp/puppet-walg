@@ -26,7 +26,7 @@ else
 fi
 
 # Check if this is the master
-IS_SLAVE=$(su postgres -c 'psql -d postgres -t -A -c "SELECT pg_is_in_recovery();"' 2>/dev/NULL)
+IS_SLAVE=$(su postgres -c 'psql -d postgres -t -A -c "SELECT pg_is_in_recovery();"' 2>/dev/null)
 if [[ $IS_SLAVE != 'f' ]]; then
  echo "Running on slave, so no basebackup"
  exit 0
@@ -36,7 +36,7 @@ echo "Starting full backup at $(date)"
 
 # Run basebackup
 export PGHOST=/var/run/postgresql
-sudo -E -u postgres /usr/local/bin/wal-g backup-push $PGDATA 2>&1
+sudo -E -u postgres <%= $bin_path %>/wal-g backup-push $PGDATA 2>&1
 
 echo "End of full backup at $(date)"
 
@@ -48,7 +48,7 @@ DELETE_BEFORE_DATE=$(date -d @${DELETE_BEFORE_DATE_SECOND} -u +%Y-%m-%dT%H:%M:%S
 echo "Will delete backups before $DELETE_BEFORE_DATE"
 
 # Fetch full backup list
-FULL_BACKUPS=$(/usr/local/bin/wal-g backup-list)
+FULL_BACKUPS=$(<%= $bin_path %>/wal-g backup-list)
 if [ $? -ne 0 ]; then
   exit 1
 fi
@@ -81,7 +81,7 @@ while read line; do
     TO_KEEP=$(( $TO_KEEP + 1 ))
   fi
 
-done < <(/usr/local/bin/wal-g backup-list)
+done < <(<%= $bin_path %>/wal-g backup-list)
 
 echo "Will delete $TO_DELETE and keep $TO_KEEP full backups"
 if [ -n "$LAST_BACKUP_TO_DELETE" ]; then
@@ -92,7 +92,7 @@ if [ -n "$LAST_BACKUP_TO_DELETE" ]; then
     echo "Something went wrong, it seems that this script try to delete all backups. Aborting"
     exit 3
   fi
-  /usr/local/bin/wal-g delete --confirm before FIND_FULL $LAST_BACKUP_TO_DELETE 2>&1
+  <%= $bin_path %>/wal-g delete --confirm before FIND_FULL $LAST_BACKUP_TO_DELETE 2>&1
 
 else
   echo "No backup to delete"

@@ -3,14 +3,14 @@ archive_process=$(psql --tuples-only -c 'SELECT COALESCE(last_failed_time < last
 
 postgres_datadir_available_bytes=$(df --block-size=1 --output=avail $(psql -t -c "SELECT setting  FROM pg_settings WHERE name = 'data_directory'" 2> /dev/null) | tail -1)
 
-if [ $postgres_datadir_available_bytes -lt <%= $backup_fuse_threshold * 1024 * 1024 * 1024 %> ]; then
+if [ $postgres_datadir_available_bytes -lt <%= $pause_archive_on_disk_pressure_threshold * 1024 * 1024 * 1024 %> ]; then
         disk_almost_full=1
 else
         disk_almost_full=0
 fi
 
 if [ "$(echo $archive_process)" = "t" ] && [ $disk_almost_full -eq 1 ]; then
-    touch /tmp/failed_pg_archive
+    touch <%= $pause_archive_on_disk_pressure_alert_file %>
 else
-    rm /tmp/failed_pg_archive > /dev/null 2>&1 || true
+    rm <%= $pause_archive_on_disk_pressure_alert_file %> > /dev/null 2>&1 || true
 fi

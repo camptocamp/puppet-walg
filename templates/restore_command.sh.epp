@@ -1,9 +1,5 @@
 #!/bin/bash
 
-
-# Should be used by postgres:
-# restore_command = '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p'
-
 source $1
 export AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY
@@ -16,4 +12,4 @@ export WALG_GPG_KEY_ID
 export WALG_PGP_KEY_PASSPHRASE
 export S3_USE_LIST_OBJECTS_V1
 
-exec /usr/local/bin/wal-g wal-fetch $2 $3
+exec <%= $bin_path %>/wal-g wal-fetch $2 $3
