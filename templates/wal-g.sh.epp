@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /usr/local/bin/exporter.env
+source <%= $walg_env_file %>
 export AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY
 export WALE_S3_PREFIX
@@ -12,4 +12,4 @@ export WALG_GPG_KEY_ID
 export WALG_PGP_KEY_PASSPHRASE
 export S3_USE_LIST_OBJECTS_V1
 
-exec /usr/local/bin/wal-g $*
+exec <%= $bin_path %>/wal-g $*

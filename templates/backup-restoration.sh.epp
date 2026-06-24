@@ -16,7 +16,7 @@ export WALG_PGP_KEY_PATH
 export WALG_GPG_KEY_ID
 export WALG_PGP_KEY_PASSPHRASE
 
-/usr/local/bin/wal-g backup-list
+<%= $bin_path %>/wal-g backup-list
 
 echo -n "Name of basebackup to restore: "
 read BASEBACKUP_NAME
@@ -38,7 +38,7 @@ else
 fi
 
 echo "Download basebackup $BASEBACKUP_NAME"
-/usr/local/bin/wal-g backup-fetch data $BASEBACKUP_NAME
+<%= $bin_path %>/wal-g backup-fetch data $BASEBACKUP_NAME
 cd data
 
 echo "Configure recovery"

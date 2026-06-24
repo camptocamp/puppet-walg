@@ -10,7 +10,7 @@ fi
 echo -n "Delete current data or backup it locally, you need space available (delete/backup): "
 read DELETE_BACKUP
 
-last_full_backup=$(sudo -u postgres /usr/local/bin/wal-g.sh backup-list | tail -n 1 | cut -f 1 -d ' ')
+last_full_backup=$(sudo -u postgres <%= $bin_path %>/wal-g.sh backup-list | tail -n 1 | cut -f 1 -d ' ')
 echo "Last full backup is $last_full_backup"
 
 echo "Stopping current postgres instance"
@@ -27,14 +27,14 @@ else
 fi
 
 echo "Download basebackup $last_full_backup"
-/usr/local/bin/wal-g.sh backup-fetch data $last_full_backup
+<%= $bin_path %>/wal-g.sh backup-fetch data $last_full_backup
 cd data
 
 echo "Configure replica"
 touch standby.signal
 sed -i '/^restore_command/d' postgresql.auto.conf
 sed -i '/^primary_conninfo/d' postgresql.auto.conf
-echo "restore_command = '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p'" >> postgresql.auto.conf
+echo "restore_command = '<%= $bin_path %>/restore_command.sh <%= $walg_env_file %> %f %p'" >> postgresql.auto.conf
 echo "primary_conninfo = 'user=replicator password=$2 host=$1 port=5432 sslmode=prefer sslcompression=0 gssencmode=prefer krbsrvname=postgres target_session_attrs=any'" >> postgresql.auto.conf
 
 chown -R postgres:postgres .

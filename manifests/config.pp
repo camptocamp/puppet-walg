@@ -4,16 +4,34 @@
 # another for full backup, configure postgres archive_command
 # and setup cronjob to perform full backup.
 #
-# @example
-#   include walg::config
-class walg::config {
+# @param retention How many days of postgresql backup will be kept
+# @param cron_hour The backup cronjob hour
+# @param cron_minute The backup cronjob minute
+# @param backup_enable If enable Postgresql wal continues backup and fullbackup
+# @param pause_archive_on_disk_pressure Check if the disk is almost full due to accumulating wals
+# @param pause_archive_on_disk_pressure_threshold_gbytes The threshold to trigger archive pause
+# @param pause_archive_on_disk_pressure_alert_file The alert file generated when archive is paused
+# @param bin_path The walg binary destination path
+# @param walg_env_file The walg environment variables file path
+class walg::config (
+  Optional[Integer]    $pause_archive_on_disk_pressure_threshold_gbytes = $walg::pause_archive_on_disk_pressure_threshold_gbytes,
+  Stdlib::Absolutepath $pause_archive_on_disk_pressure_alert_file       = '/tmp/failed_pg_archive',
+  Integer              $retention                                       = $walg::retention,
+  Integer              $cron_hour                                       = $walg::cron_hour,
+  Integer              $cron_minute                                     = $walg::cron_minute,
+  Boolean              $backup_enable                                   = $walg::backup_enable,
+  Boolean              $pause_archive_on_disk_pressure                  = $walg::pause_archive_on_disk_pressure,
+  Stdlib::Absolutepath $bin_path                                        = $walg::destination,
+  Stdlib::Absolutepath $walg_env_file                                   = $walg::walg_env_file,
+) {
   assert_private()
 
-  file { '/usr/local/bin/archive_command.sh':
+  file { "${bin_path}/archive_command.sh":
     content => epp('walg/archive_command.sh.epp',
       {
-        'backup_fuse'   => $walg::backup_fuse,
-        'backup_prefix' => $walg::backup_prefix,
+        'pause_archive_on_disk_pressure'            => $pause_archive_on_disk_pressure,
+        'pause_archive_on_disk_pressure_alert_file' => $pause_archive_on_disk_pressure_alert_file,
+        'bin_path'                                  => $bin_path,
       }
     ),
     mode    => '0755',
@@ -21,15 +39,24 @@ class walg::config {
     group   => 'root',
   }
 
-  file { '/usr/local/bin/restore_command.sh':
-    content => file('walg/restore_command.sh'),
+  file { "${bin_path}/restore_command.sh":
+    content => epp('walg/restore_command.sh.epp',
+      {
+        'bin_path' => $bin_path,
+      }
+    ),
     mode    => '0755',
     owner   => 'root',
     group   => 'root',
   }
 
-  file { '/usr/local/bin/wal-g.sh':
-    content => file('walg/wal-g.sh'),
+  file { "${bin_path}/wal-g.sh":
+    content => epp('walg/wal-g.sh.epp',
+      {
+        'bin_path'      => $bin_path,
+        'walg_env_file' => $walg_env_file,
+      }
+    ),
     mode    => '0755',
     owner   => 'root',
     group   => 'root',
@@ -41,7 +68,8 @@ class walg::config {
         'datadir'        => $postgresql::params::datadir,
         'service_name'   => $postgresql::params::service_name,
         'version'        => $postgresql::params::version,
-        'remove_archive' => ! $walg::backup_enable,
+        'remove_archive' => ! $backup_enable,
+        'bin_path'       => $bin_path,
       }
     ),
     mode    => '0755',
@@ -52,8 +80,10 @@ class walg::config {
   file { '/root/setup-replica-from-backup.sh':
     content => epp('walg/setup-replica-from-backup.sh.epp',
       {
-        'datadir'      => $postgresql::params::datadir,
-        'service_name' => $postgresql::params::service_name,
+        'datadir'        => $postgresql::params::datadir,
+        'service_name'   => $postgresql::params::service_name,
+        'bin_path'       => $bin_path,
+        'walg_env_file'  => $walg_env_file,
       }
     ),
     mode    => '0755',
@@ -61,10 +91,11 @@ class walg::config {
     group   => 'root',
   }
 
-  file { '/usr/local/bin/cron-full-backup.sh':
+  file { "${bin_path}/cron-full-backup.sh":
     content => epp('walg/cron-full-backup.sh.epp',
       {
-        'datadir' => $postgresql::params::datadir,
+        'datadir'  => $postgresql::params::datadir,
+        'bin_path' => $bin_path,
       }
     ),
     mode    => '0755',
@@ -72,38 +103,46 @@ class walg::config {
     group   => 'root',
   }
 
-  file { '/usr/local/bin/backup-fuse.sh':
-    content => epp('walg/backup-fuse.sh.epp',
-      {
-        'backup_fuse_threshold' => $walg::backup_fuse_threshold_gbytes,
-      }
-    ),
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
+  if $pause_archive_on_disk_pressure {
+    file { "${bin_path}/pause-archive-on-disk-pressure.sh":
+      content => epp('walg/pause-archive-on-disk-pressure.sh.epp',
+        {
+          'pause_archive_on_disk_pressure_threshold'  => $pause_archive_on_disk_pressure_threshold_gbytes,
+          'pause_archive_on_disk_pressure_alert_file' => $pause_archive_on_disk_pressure_alert_file,
+        }
+      ),
+      mode    => '0755',
+      owner   => 'root',
+      group   => 'root',
+    }
+
+    cron { 'pause-archive-on-disk-pressure':
+      command     => "${bin_path}/pause-archive-on-disk-pressure.sh",
+      environment => "PATH=${bin_path}:/usr/bin:/bin",
+      user        => 'postgres',
+      minute      => '*/5',
+    }
   }
 
-  if $walg::backup_enable {
+  if $backup_enable {
     postgresql::server::config_entry {
       'archive_mode':
         value => 'on',
         ;
       'archive_command':
-        value => '/usr/local/bin/archive_command.sh /usr/local/bin/exporter.env %p',
+        value => "${bin_path}/archive_command.sh ${walg_env_file} %p",
         ;
       'restore_command':
-        value => '/usr/local/bin/restore_command.sh /usr/local/bin/exporter.env %f %p',
+        value => "${bin_path}/restore_command.sh ${walg_env_file} %f %p",
         ;
     }
     cron { 'full-backup':
-      command => "/usr/local/bin/cron-full-backup.sh /usr/local/bin/exporter.env ${walg::retention} | logger -t walg-fullbackup",
+      command => "${bin_path}/cron-full-backup.sh ${walg_env_file} ${retention} | logger -t walg-fullbackup",
       user    => 'root',
-      hour    => $walg::cron_hour,
-      minute  => $walg::cron_minute,
+      hour    => $cron_hour,
+      minute  => $cron_minute,
     }
-
   } else {
-
     postgresql::server::config_entry {
       'archive_mode':
         value => 'off',
@@ -118,15 +157,6 @@ class walg::config {
 
     cron { 'full-backup':
       ensure => absent,
-    }
-  }
-
-  if $walg::backup_fuse {
-    cron { 'backup-fuse':
-      command     => '/usr/local/bin/backup-fuse.sh',
-      environment => 'PATH=/usr/local/bin:/usr/bin:/bin',
-      user        => 'postgres',
-      minute      => '*/5',
     }
   }
 }

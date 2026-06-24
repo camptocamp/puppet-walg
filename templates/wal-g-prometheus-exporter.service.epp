@@ -5,8 +5,8 @@ Description=Wal-g prometheus exporter
 Restart=always
 User=postgres
 Group=postgres
-EnvironmentFile=/usr/local/bin/exporter.env
-ExecStart=/usr/local/bin/wal-g-prometheus-exporter --debug <%= $datadir %>/pg_wal/archive_status/
+EnvironmentFile=<%= $walg_env_file %>
+ExecStart=<%= $install_root %>/wal-g-prometheus-exporter --debug <%= $datadir %>/pg_wal/archive_status/
 ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
